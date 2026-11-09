@@ -13,6 +13,8 @@ import android.view.WindowManager
 import android.os.Build
 import android.view.HapticFeedbackConstants
 import android.view.KeyEvent
+import android.view.MotionEvent
+import dev.pepotech.pepomote.control.PhysicalGamepad
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -435,6 +437,11 @@ class MainActivity : ComponentActivity() {
     /** Bits pulsados por las teclas de volumen: su UP se procesa SIEMPRE. */
     private var volumeHeld = 0
 
+    override fun dispatchGenericMotionEvent(ev: MotionEvent): Boolean {
+        if (currentScreen == Screen.Controller && PhysicalGamepad.onMotion(ev)) return true
+        return super.dispatchGenericMotionEvent(ev)
+    }
+
     /**
      * Botones físicos de volumen mientras el mando (o el GamePad) está abierto:
      * subir = A, bajar = gatillo B. Configurable en Ajustes. Se activa al recibir
@@ -444,6 +451,7 @@ class MainActivity : ComponentActivity() {
     // Activity's public key hook is inherited through AndroidX Core's restricted override.
     @SuppressLint("RestrictedApi")
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (currentScreen == Screen.Controller && PhysicalGamepad.onKey(event)) return true
         val bit = when (event.keyCode) {
             KeyEvent.KEYCODE_VOLUME_UP -> ButtonState.A
             KeyEvent.KEYCODE_VOLUME_DOWN -> ButtonState.B
